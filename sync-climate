@@ -24,10 +24,6 @@ variables:
 trigger:
   - platform: state
     entity_id: !input climate_source
-    attribute: temperature
-  - platform: state
-    entity_id: !input climate_source
-    attribute: hvac_mode
 
 condition: []
 
@@ -48,4 +44,4 @@ action:
           - service: climate.set_hvac_mode
             target: !input climate_target
             data:
-              hvac_mode: "{{ state_attr(climate_source, 'hvac_mode') }}"
+              hvac_mode: "{{ state_attr(climate_source, 'hvac_action') }}"
