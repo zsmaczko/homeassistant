@@ -1,0 +1,27 @@
+- id: '1742580898715'
+  alias: a1
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - climate.diyless_thermostat_3_central_heating
+    attribute: temperature
+  - trigger: state
+    entity_id:
+    - climate.diyless_thermostat_3_central_heating
+  conditions: []
+  actions:
+  - action: climate.set_temperature
+    metadata: {}
+    data:
+      temperature: '{{ state_attr(''climate.diyless_thermostat_3_central_heating'',
+        ''temperature'') }}'
+    target:
+      entity_id: climate.generic_nappali_thermostat
+  - action: climate.set_hvac_mode
+    metadata: {}
+    data:
+      hvac_mode: '{{ trigger.to_state.state }}'
+    target:
+      entity_id: climate.generic_nappali_thermostat
+  mode: single
