@@ -25,25 +25,35 @@ trigger:
   - platform: state
     entity_id: !input climate_source
 
-condition: []
+condition:
+  - condition: template
+    value_template: >-
+      {{
+        trigger.to_state is not none and
+        trigger.from_state is not none and
+        (
+          trigger.to_state.attributes.temperature != trigger.from_state.attributes.temperature or
+          trigger.to_state.state != trigger.from_state.state
+        )
+      }}
 
 mode: queued
 
 action:
-  - choose:
-      - conditions: >
-          {{ state_attr(climate_source, 'temperature') is not none }}
-        sequence:
-          - service: climate.set_temperature
-            target: !input climate_target
-            data:
-              temperature: "{{ state_attr(climate_source, 'temperature') }}"
-      - conditions: >
-          or
-          - {{ trigger.to_state.state is 'off' }}
-          - {{ trigger.to_state.state is 'heat' }}
-        sequence:
-          - service: climate.set_hvac_mode
-            target: !input climate_target
-            data:
-              hvac_mode: "{{ trigger.to_state.state }}"
+  - if:
+      - condition: template
+        value_template: "{{ state_attr(climate_source, 'temperature') is not none }}"
+    then:
+      - service: climate.set_temperature
+        target: !input climate_target
+        data:
+          temperature: "{{ state_attr(climate_source, 'temperature') }}"
+  - if:
+      - condition: template
+        value_template: "{{ trigger.to_state.state in ['heat', 'off', 'cool', 'auto', 'dry', 'fan_only'] }}"
+    then:
+      - service: climate.set_hvac_mode
+        target: !input climate_target
+        data:
+          hvac_mode: "{{ trigger.to_state.state }}"
+
