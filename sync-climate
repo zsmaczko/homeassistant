@@ -39,9 +39,11 @@ action:
             data:
               temperature: "{{ state_attr(climate_source, 'temperature') }}"
       - conditions: >
-          {{ state_attr(climate_source, 'hvac_mode') is not none }}
+          or
+          - {{ trigger.to_state.state is 'off' }}
+          - {{ trigger.to_state.state is 'heat' }}
         sequence:
           - service: climate.set_hvac_mode
             target: !input climate_target
             data:
-              hvac_mode: "{{ state_attr(climate_source, 'hvac_action') }}"
+              hvac_mode: "{{ trigger.to_state.state }}"
