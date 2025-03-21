@@ -1,0 +1,51 @@
+blueprint:
+  name: Send target temperature and hvac mode from a room thermostat to a climate target
+  description: Sends a target temperature and HVAC mode from a thermostat to a climate target (radiators) which can be one or multiple areas/entities/devices.
+  domain: automation
+  source_url: https://gist.github.com/wittypluck/2638cc4dec50bba5ddf4e946b735c94a
+  input:
+    climate_source:
+      name: Source thermostat
+      description: Climate entity which will send the temperature and hvac_mode update
+      selector:
+        entity:
+          domain: climate    
+    climate_target:
+      name: Target radiators
+      description: Climate target which will get the temperature and hvac_mode update
+      selector:
+        target:
+          entity:
+            domain: climate
+
+variables:
+  climate_source: !input climate_source
+
+trigger:
+  - platform: state
+    entity_id: !input climate_source
+    attribute: temperature
+  - platform: state
+    entity_id: !input climate_source
+    attribute: hvac_mode
+
+condition: []
+
+mode: queued
+
+action:
+  - choose:
+      - conditions: >
+          {{ state_attr(climate_source, 'temperature') is not none }}
+        sequence:
+          - service: climate.set_temperature
+            target: !input climate_target
+            data:
+              temperature: "{{ state_attr(climate_source, 'temperature') }}"
+      - conditions: >
+          {{ state_attr(climate_source, 'hvac_mode') is not none }}
+        sequence:
+          - service: climate.set_hvac_mode
+            target: !input climate_target
+            data:
+              hvac_mode: "{{ state_attr(climate_source, 'hvac_mode') }}"
